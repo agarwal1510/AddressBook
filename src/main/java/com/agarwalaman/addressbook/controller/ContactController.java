@@ -2,6 +2,8 @@ package com.agarwalaman.addressbook.controller;
 
 import static spark.Spark.*;
 
+import com.agarwalaman.addressbook.response.Response;
+import com.agarwalaman.addressbook.response.ResponseStatus;
 import com.google.gson.Gson;
 import com.agarwalaman.addressbook.service.ContactService;
 import com.agarwalaman.addressbook.entity.Contact;
@@ -13,7 +15,7 @@ public class ContactController {
     public static void handleRequests(final ContactService service, final Gson gson) {
 
         get("/", (request, response) -> {
-            System.out.println("inside welcome");
+            //System.out.println("inside welcome");
             return "Welcome to Address Book";
         });
 
@@ -22,36 +24,42 @@ public class ContactController {
             System.out.println("inside post: " + request.body());
             response.type("application/json");
             if (service.addContact(contact)) {
-                return "Success";
+                return gson.toJson(new Response(ResponseStatus.SUCCESS, "Contact added successfully"));
             }
-            return "Failure";
+            response.status(404);
+            return gson.toJson(new Response(ResponseStatus.FAILURE, "Something went wrong while adding the contact, check the number and try again!"));
         });
 
         get("/contact/:name", (request, response) -> {
-            Contact contact = service.getContact(request.params(":name"));
+            String name = request.params(":name");
+            Contact contact = service.getContact(name);
             response.type("application/json");
             if (contact != null) {
-                return gson.toJson(contact, Contact.class);
+                return gson.toJson(new Response(ResponseStatus.SUCCESS, contact));
             }
-            response.status(400);
-            return "Failure";
+            response.status(404);
+            return gson.toJson(new Response(ResponseStatus.FAILURE, "Contact with name: %s not found", name));
         });
 
         put("/contact/:name", (request, response) -> {
             response.type("application/json");
+            String name = request.params(":name");
             Contact contact = gson.fromJson(request.body(), Contact.class);
-            if (service.updateContact(request.params(":name"), contact)) {
-                return "Success";
+            if (service.updateContact(name, contact)) {
+                return gson.toJson(new Response(ResponseStatus.SUCCESS, "Contact updated successfully"));
             }
-            return "Failure";
+            response.status(404);
+            return gson.toJson(new Response(ResponseStatus.FAILURE, "Contact with name: %s not found", name));
         });
 
         delete("contact/:name", (request, response) -> {
             response.type("application/json");
-            if (service.removeContact(request.params(":name"))) {
-                return "Success";
+            String name = request.params(":name");
+            if (service.removeContact(name)) {
+                return gson.toJson(new Response(ResponseStatus.SUCCESS, "Contact deleted successfully"));
             }
-            return "Failure";
+            response.status(404);
+            return gson.toJson(new Response(ResponseStatus.FAILURE,"Contact with name: %s not found", name));
         });
 
         get("/contact", (request, response) -> {

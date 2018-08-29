@@ -44,7 +44,9 @@ public class ContactServiceImplementation implements ContactService {
     }
 
     private boolean validatePhoneNumber(String phoneNumber) {
-        if (phoneNumber.matches("^[0-9]{10}$")) {
+        String regex = "^\\+?1?[-.\\s]?\\(?([0-9]{3})\\)?[-.\\s]?([0-9]{3})[-.\\s]?([0-9]{4})$";
+        Pattern pattern = Pattern.compile(regex);
+        if (pattern.matcher(phoneNumber).matches()) {
             return true;
         } else {
             return false;
