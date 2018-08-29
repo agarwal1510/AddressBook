@@ -66,10 +66,12 @@ public class ContactController {
             String pageSize = request.queryParams("pageSize");
             String page = request.queryParams("page");
             String query = request.queryParams("query");
-
-            List<Contact> list = service.getContacts(Integer.valueOf(pageSize), Integer.valueOf(page), query);
             response.type("application/json");
-            return gson.toJson(list);
+            List<Contact> list = service.getContacts(Integer.valueOf(pageSize), Integer.valueOf(page), query);
+            if (list != null && list.size() > 0) {
+                return gson.toJson(new Response(ResponseStatus.SUCCESS, list));
+            }
+            return gson.toJson(new Response(ResponseStatus.FAILURE, "No more entries found"));
         });
     }
 }

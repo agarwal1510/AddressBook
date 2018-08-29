@@ -31,8 +31,10 @@ public class ContactServiceImplementation implements ContactService {
 
     @Override
     public List<Contact> getContacts(int pageSize, int page, String query) {
-
-        return null;
+        if (pageSize < 0 || page <= 0) {
+            return null;
+        }
+        return contactDao.getContacts(pageSize, page, query);
     }
 
     public boolean updateContact(String name, Contact contact) {

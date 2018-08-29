@@ -1,9 +1,11 @@
 package com.agarwalaman.addressbook.dao;
 
 import com.agarwalaman.addressbook.entity.Contact;
+import com.agarwalaman.addressbook.utils.Constants;
 import com.google.gson.Gson;
 import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -17,6 +19,7 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
 import org.elasticsearch.search.SearchHit;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -33,19 +36,19 @@ public class ContactDao {
 
     public boolean addContact(Contact contact) {
         System.out.print("Trying to create index");
-        IndexResponse response = client.prepareIndex("addressbook", "contact")
+        IndexResponse response = client.prepareIndex(Constants.index, Constants.type)
                 .setSource(gson.toJson(contact), XContentType.JSON).get();
         System.out.print(response.getId() + " " + response.getIndex() + " " + response.getType());
         return false;
     }
 
     public Contact getContact(String name) {
-        QueryBuilder matchSpecificFieldQuery = QueryBuilders
+        QueryBuilder query = QueryBuilders
                 .matchQuery("name", name);
-        SearchResponse response = client.prepareSearch("addressbook")
-                .setTypes("contact")
+        SearchResponse response = client.prepareSearch(Constants.index)
+                .setTypes(Constants.type)
                 .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(matchSpecificFieldQuery)                 // Query
+                .setQuery(query)                 // Query
                 .get();
         System.out.println(name + " " + response.toString());
         if (response.getHits().totalHits > 0) {
@@ -58,8 +61,26 @@ public class ContactDao {
         return null;
     }
 
-    public List<Contact> getContacts() {
-        return null;
+    public List<Contact> getContacts(int pageSize, int page, String query) {
+        List<Contact> contactList = new ArrayList<>();
+        Map<String, Object> attrMap;
+
+        SearchRequestBuilder requestBuilder = client.prepareSearch(Constants.index)
+                .setTypes(Constants.type)
+                .setFrom((page-1) * pageSize)
+                .setSize(pageSize);
+        if (query != null && !query.isEmpty()) {
+            requestBuilder.setQuery(QueryBuilders.queryStringQuery(query));
+        }
+        SearchResponse response = requestBuilder.get();
+        System.out.println(response.toString());
+        if (response.getHits().totalHits > 0) {
+            for (SearchHit searchHit : response.getHits().getHits()) {
+                attrMap = searchHit.getSourceAsMap();
+                contactList.add(new Contact(attrMap.get("name").toString(), attrMap.get("number").toString()));
+            }
+        }
+        return contactList;
     }
 
     public boolean updateContact(String name, Contact contact) {
@@ -67,8 +88,8 @@ public class ContactDao {
         if (contactId != null) {
             try {
                 UpdateRequest request = new UpdateRequest();
-                request.index("addressbook");
-                request.type("contact");
+                request.index(Constants.index);
+                request.type(Constants.type);
                 request.id(contactId);
                 request.doc(gson.toJson(contact), XContentType.JSON);
                 request.docAsUpsert(false);
@@ -88,7 +109,7 @@ public class ContactDao {
     public boolean removeContact(String name) {
         BulkByScrollResponse response = DeleteByQueryAction.INSTANCE.newRequestBuilder(client)
                 .filter(QueryBuilders.matchQuery("name", name))
-                .source("addressbook")
+                .source(Constants.index)
                 .get();
         long deleted = response.getDeleted();
         System.out.println("Deleted: " + deleted + " " + response.toString());
@@ -98,10 +119,10 @@ public class ContactDao {
     public String getContactId(String name) {
         QueryBuilder matchSpecificFieldQuery = QueryBuilders
                 .matchQuery("name", name);
-        SearchResponse response = client.prepareSearch("addressbook")
-                .setTypes("contact")
+        SearchResponse response = client.prepareSearch(Constants.index)
+                .setTypes(Constants.type)
                 .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(matchSpecificFieldQuery)                 // Query
+                .setQuery(matchSpecificFieldQuery)
                 .get();
         System.out.println(name + " " + response.toString());
         if (response.getHits().totalHits > 0) {

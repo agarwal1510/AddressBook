@@ -2,13 +2,17 @@ package com.agarwalaman.addressbook.response;
 
 import com.agarwalaman.addressbook.entity.Contact;
 
+import java.util.List;
+
 public class Response {
 
     private ResponseStatus status;
     private String message;
     private Contact contact;
+    private List<Contact> contactList;
 
-    public Response(Exception e) {
+    public Response(ResponseStatus status, Exception e) {
+        this.status = status;
         this.message = e.getMessage();
     }
 
@@ -22,12 +26,13 @@ public class Response {
         this.contact = contact;
     }
 
+    public Response(ResponseStatus status, List<Contact> list) {
+        this.status = status;
+        this.contactList = list;
+    }
+
     public Response(ResponseStatus status, String message, String... args) {
         this.status = status;
         this.message = String.format(message, args);
-    }
-
-    public String getMessage() {
-        return message;
     }
 }
