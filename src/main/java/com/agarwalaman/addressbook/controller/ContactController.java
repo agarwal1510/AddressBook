@@ -13,11 +13,13 @@ public class ContactController {
     public static void handleRequests(final ContactService service, final Gson gson) {
 
         get("/", (request, response) -> {
+            System.out.println("inside welcome");
             return "Welcome to Address Book";
         });
 
         post("/contact", (request, response) -> {
             Contact contact = gson.fromJson(request.body(), Contact.class);
+            System.out.println("inside post: " + request.body());
             response.type("application/json");
             if (service.addContact(contact)) {
                 return "Success";

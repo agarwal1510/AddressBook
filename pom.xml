@@ -32,12 +32,6 @@
             <version>2.8.5</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.25</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
@@ -54,8 +48,38 @@
             <artifactId>elasticsearch</artifactId>
             <version>6.4.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.21</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.elasticsearch.plugin/shield -->
+        <dependency>
+            <groupId>org.elasticsearch.plugin</groupId>
+            <artifactId>shield</artifactId>
+            <version>2.4.6</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>x-pack-transport</artifactId>
+            <version>6.3.2</version>
+        </dependency>
 
     </dependencies>
+
+    <repositories>
+        <!-- add the elastic repo -->
+        <repository>
+            <id>elastic</id>
+            <url>https://artifacts.elastic.co/maven</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 </project>

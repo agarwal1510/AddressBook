@@ -16,8 +16,10 @@ public class ContactServiceImplementation implements ContactService {
 
     public boolean addContact(Contact contact) {
         if (!validatePhoneNumber(contact.getNumber())) {
+            System.out.print("Invalid Number: " + contact.getNumber());
             return false;
         } else {
+            System.out.print("Dao called");
             contactDao.addContact(contact);
             return true;
         }
@@ -41,8 +43,8 @@ public class ContactServiceImplementation implements ContactService {
         return contactDao.removeContact(name);
     }
 
-    private static boolean validatePhoneNumber(String phoneNumber) {
-        if (phoneNumber.matches("^(1\\\\-)?[0-9]{3}\\\\-?[0-9]{3}\\\\-?[0-9]{4}$")) {
+    private boolean validatePhoneNumber(String phoneNumber) {
+        if (phoneNumber.matches("^[0-9]{10}$")) {
             return true;
         } else {
             return false;

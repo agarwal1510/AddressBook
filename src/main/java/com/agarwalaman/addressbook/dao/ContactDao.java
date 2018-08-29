@@ -3,8 +3,12 @@ package com.agarwalaman.addressbook.dao;
 import com.agarwalaman.addressbook.entity.Contact;
 import com.google.gson.Gson;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 
 import java.util.List;
 
@@ -19,6 +23,7 @@ public class ContactDao {
     }
 
     public boolean addContact(Contact contact) {
+        System.out.print("Trying to create index");
         IndexResponse response = client.prepareIndex("addressbook", "contact")
                 .setSource(gson.toJson(contact), XContentType.JSON).get();
         System.out.print(response.getId() + " " + response.getIndex() + " " + response.getType());
@@ -26,6 +31,14 @@ public class ContactDao {
     }
 
     public Contact getContact(String name) {
+        QueryBuilder matchSpecificFieldQuery= QueryBuilders
+                .matchQuery("name", name);
+        SearchResponse response = client.prepareSearch("addressbook")
+                .setTypes("contact")
+                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                .setQuery(matchSpecificFieldQuery)                 // Query
+                .get();
+        System.out.println(name + " " + response.toString());
         return null;
     }
 
