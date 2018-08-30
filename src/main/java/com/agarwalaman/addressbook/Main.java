@@ -1,14 +1,16 @@
 package com.agarwalaman.addressbook;
 
+import com.agarwalaman.addressbook.controller.ContactController;
 import com.agarwalaman.addressbook.dao.ContactDao;
 import com.agarwalaman.addressbook.elasticsearch.ElasticSearchClient;
-import com.google.gson.Gson;
-import com.agarwalaman.addressbook.controller.ContactController;
 import com.agarwalaman.addressbook.service.ContactService;
 import com.agarwalaman.addressbook.service.ContactServiceImplementation;
+import com.google.gson.Gson;
 
-import java.util.regex.Pattern;
 
+/**
+ * Application/Driver class
+ */
 public class Main {
 
     private static ContactService service;

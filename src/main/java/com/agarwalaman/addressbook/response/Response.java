@@ -4,6 +4,9 @@ import com.agarwalaman.addressbook.entity.Contact;
 
 import java.util.List;
 
+/**
+ * Defines the REST response template
+ */
 public class Response {
 
     private ResponseStatus status;

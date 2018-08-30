@@ -1,5 +1,9 @@
 package com.agarwalaman.addressbook.entity;
 
+/**
+ * Contact POJO/Model
+ * contains name and number for simplicity
+ */
 public class Contact {
 
     private String name;
