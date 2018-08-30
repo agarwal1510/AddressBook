@@ -173,7 +173,10 @@ public class ContactDao {
                 .get();
         if (response.getHits().totalHits > 0) {
             for (SearchHit searchHit : response.getHits().getHits()) {
-                return searchHit.getId();
+                Map<String, Object> attrMap = searchHit.getSourceAsMap();
+                if (attrMap.get("name").toString().equals(name)) {
+                    return searchHit.getId();
+                }
             }
         }
         return null;
