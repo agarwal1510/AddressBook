@@ -42,7 +42,6 @@
             <artifactId>transport</artifactId>
             <version>6.4.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch -->
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
@@ -52,13 +51,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.21</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.elasticsearch.plugin/shield -->
-        <dependency>
-            <groupId>org.elasticsearch.plugin</groupId>
-            <artifactId>shield</artifactId>
-            <version>2.4.6</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
@@ -77,18 +69,9 @@
             <version>6.4.0</version>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.apache.lucene</groupId>-->
-        <!--<artifactId>lucene-test-framework</artifactId>-->
-        <!--<version>7.4.0</version>-->
-        <!--<scope>test</scope>-->
-        <!--</dependency>-->
-
-
     </dependencies>
 
     <repositories>
-        <!-- add the elastic repo -->
         <repository>
             <id>elastic</id>
             <url>https://artifacts.elastic.co/maven</url>

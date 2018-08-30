@@ -1,5 +1,7 @@
 package com.agarwalaman.addressbook.entity;
 
+import java.util.Objects;
+
 /**
  * Contact POJO/Model
  * contains name and number for simplicity
@@ -28,5 +30,27 @@ public class Contact {
 
     public void setNumber(String number) {
         this.number = number;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Contact)) return false;
+        Contact contact = (Contact) o;
+        return Objects.equals(name, contact.name) &&
+                Objects.equals(number, contact.number);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, number);
+    }
+
+    @Override
+    public String toString() {
+        return "Contact{" +
+                "name='" + name + '\'' +
+                ", number='" + number + '\'' +
+                '}';
     }
 }

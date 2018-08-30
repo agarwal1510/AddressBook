@@ -8,8 +8,10 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
@@ -19,6 +21,7 @@ import org.elasticsearch.search.SearchHit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Data access object class which interacts with the database.
@@ -42,8 +45,8 @@ public class ContactDao {
      */
     public boolean addContact(Contact contact) {
         IndexResponse response = client.prepareIndex(Constants.index, Constants.type)
-                .setSource(gson.toJson(contact), XContentType.JSON).get();
-        if (response != null && response.getId() != null) {
+                .setSource(gson.toJson(contact), XContentType.JSON).setRefreshPolicy("wait_for").get();
+        if (response != null && response.getId() != null && !response.getId().isEmpty()) {
             return true;
         }
         return false;
@@ -56,19 +59,24 @@ public class ContactDao {
      * @return Contact object if found else null
      */
     public Contact getContact(String name) {
-        QueryBuilder query = QueryBuilders
-                .matchQuery("name", name);
-        SearchResponse response = client.prepareSearch(Constants.index)
-                .setTypes(Constants.type)
-                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(query)                 // Query
-                .get();
-        if (response.getHits().totalHits > 0) {
-            for (SearchHit searchHit : response.getHits().getHits()) {
-                Map<String, Object> attrMap = searchHit.getSourceAsMap();
-                Contact contact = new Contact(attrMap.get("name").toString(), attrMap.get("number").toString());
-                return contact;
+        try {
+            QueryBuilder query = QueryBuilders
+                    .matchQuery("name", name);
+            SearchResponse response = client.prepareSearch(Constants.index)
+                    .setTypes(Constants.type)
+                    .setQuery(query)
+                    .get();
+            if (response.getHits().totalHits > 0) {
+                for (SearchHit searchHit : response.getHits().getHits()) {
+                    Map<String, Object> attrMap = searchHit.getSourceAsMap();
+                    if (attrMap.get("name").toString().equals(name)) {
+                        Contact contact = new Contact(attrMap.get("name").toString(), attrMap.get("number").toString());
+                        return contact;
+                    }
+                }
             }
+        } catch (IndexNotFoundException e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -112,14 +120,23 @@ public class ContactDao {
     public boolean updateContact(String name, Contact contact) {
         String contactId = getContactId(name);
         if (contactId != null) {
-            UpdateRequest request = new UpdateRequest();
-            request.index(Constants.index);
-            request.type(Constants.type);
-            request.id(contactId);
-            request.doc(gson.toJson(contact), XContentType.JSON);
-            request.docAsUpsert(false);
-            client.update(request);
-            return true;
+            try {
+                UpdateRequest request = new UpdateRequest();
+                request.index(Constants.index);
+                request.type(Constants.type);
+                request.id(contactId);
+                request.doc(gson.toJson(contact), XContentType.JSON);
+                request.docAsUpsert(false);
+                request.setRefreshPolicy("wait_for");
+                UpdateResponse response = client.update(request).get();
+                if (response != null && response.getId() != null && !response.getId().isEmpty()) {
+                    return true;
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
         }
         return false;
     }
@@ -134,6 +151,7 @@ public class ContactDao {
         BulkByScrollResponse response = DeleteByQueryAction.INSTANCE.newRequestBuilder(client)
                 .filter(QueryBuilders.matchQuery("name", name))
                 .source(Constants.index)
+                .refresh(true)
                 .get();
         long deleted = response.getDeleted();
         return deleted > 0 ? true : false;

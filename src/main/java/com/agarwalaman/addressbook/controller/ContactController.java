@@ -47,7 +47,7 @@ public class ContactController {
                 return gson.toJson(new Response(ResponseStatus.SUCCESS, contact));
             }
             response.status(404);
-            return gson.toJson(new Response(ResponseStatus.FAILURE, "Contact with name: %s not found", name));
+            return gson.toJson(new Response(ResponseStatus.FAILURE, "Contact with name: %s not found, try adding the contact before you search", name));
         });
 
         /**
@@ -89,7 +89,7 @@ public class ContactController {
             if (list != null && list.size() > 0) {
                 return gson.toJson(new Response(ResponseStatus.SUCCESS, list));
             }
-            return gson.toJson(new Response(ResponseStatus.FAILURE, "No more entries found"));
+            return gson.toJson(new Response(ResponseStatus.FAILURE, "No more entries found, try changing the offset"));
         });
     }
 }
